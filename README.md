@@ -18,6 +18,27 @@ de professionnel·les de l'accompagnement et du bien-être.
 
 Le fichier `AVANCEMENT.md` suit l'état de chaque étape et les décisions en attente des trois fondatrices.
 
+## Mettre en ligne sur Vercel
+
+Le dépôt contient `vercel.json` : Vercel détecte Vite, construit avec `npm run build`
+et sert `dist/`. Toutes les adresses internes sont renvoyées vers `index.html`, donc
+`/connexion`, `/app` ou `/auth/callback` fonctionnent même en accès direct ou après un rafraîchissement.
+
+1. Sur vercel.com, connectez-vous avec GitHub, puis **Add New… → Project** et importez ce dépôt.
+2. **Settings → Git → Production Branch** : indiquez la branche de travail en cours.
+3. **Settings → Environment Variables** : ajoutez `VITE_SUPABASE_URL` et `VITE_SUPABASE_ANON_KEY`.
+   `VITE_SITE_URL` est inutile en ligne : l'application utilise automatiquement l'adresse du site.
+4. **Deployments → Redeploy** après tout ajout de variable.
+
+Sans ces variables, les pages publiques s'affichent normalement et la connexion indique clairement
+que la base n'est pas encore reliée.
+
+## Créer les tables sans terminal
+
+Dans le tableau de bord Supabase → **SQL Editor → New query**, collez le contenu de
+`supabase/migrations/20260904000001_fondations.sql` puis cliquez sur **Run**. Aucune installation
+n'est nécessaire. La CLI reste utilisable pour qui préfère le terminal.
+
 ## Démarrer sur votre ordinateur
 
 Prérequis : Node.js (LTS) et Git.
@@ -48,8 +69,8 @@ apparaître dans ce projet ni dans une conversation.
 | `npm run test` | Tests unitaires et tests des gardes de routes (Vitest) |
 | `npm run test:rls` | Tests des règles d'accès de la base sur un PostgreSQL local jetable |
 | `npm run test:all` | Typage + lint + tous les tests |
-| `npx supabase login` | Connecte la CLI à votre compte (ouvre le navigateur) |
-| `npx supabase link --project-ref <ref>` | Relie le dossier à votre projet Supabase (mot de passe demandé dans le terminal) |
+| `npx supabase@latest login` | Connecte la CLI à votre compte, ouvre le navigateur |
+| `npx supabase@latest link --project-ref <ref>` | Relie le dossier à votre projet Supabase, mot de passe demandé dans le terminal |
 | `npm run db:push` | Applique les migrations à votre base Supabase |
 
 ## Désigner les trois fondatrices

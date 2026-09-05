@@ -17,7 +17,8 @@ export function ErrorScreen({ message, onRetry }: { message: string; onRetry?: (
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center gap-6 p-6">
       <Logo size="lg" />
-      <Alert tone="error" title="Un problème est survenu" className="max-w-md">
+      <h1 className="text-2xl">Un problème est survenu</h1>
+      <Alert tone="error" className="max-w-md">
         {message}
       </Alert>
       {onRetry && (
@@ -31,10 +32,11 @@ export function ErrorScreen({ message, onRetry }: { message: string; onRetry?: (
 
 /** Exige une session. Sinon, renvoie vers la page de connexion en mémorisant la destination. */
 export function RequireAuth() {
-  const { loading, error, session, retry } = useAuth()
+  const { loading, session } = useAuth()
   const location = useLocation()
   if (loading) return <LoadingScreen />
-  if (error && !session) return <ErrorScreen message={error} onRetry={retry} />
+  // Sans session, on renvoie toujours vers la page de connexion : elle affiche
+  // elle-même le message expliquant pourquoi la connexion est impossible.
   if (!session) {
     const next = encodeURIComponent(location.pathname + location.search)
     return <Navigate to={`/connexion?next=${next}`} replace />

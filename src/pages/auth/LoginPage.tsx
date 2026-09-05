@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { Alert, Button, Card, Field, Input, Logo } from '../../components/ui'
 import { useAuth } from '../../hooks/useAuth'
 import { isValidEmail } from '../../lib/auth-messages'
+import { isSupabaseConfigured } from '../../lib/supabase'
 
 export default function LoginPage() {
   const { signInWithEmail, error: authError } = useAuth()
@@ -80,7 +81,12 @@ export default function LoginPage() {
             />
           </Field>
           {sendError && <Alert tone="error">{sendError}</Alert>}
-          <Button type="submit" className="w-full" loading={sending}>
+          <Button
+            type="submit"
+            className="w-full"
+            loading={sending}
+            disabled={!isSupabaseConfigured}
+          >
             {sending ? 'Envoi du lien…' : 'Recevoir mon lien de connexion'}
           </Button>
         </form>

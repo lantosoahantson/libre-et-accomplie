@@ -55,7 +55,7 @@ export function friendlyAuthError(err: unknown): string {
     return 'Ce lien de connexion a expiré ou a déjà été utilisé. Demandez un nouveau lien.'
   if (raw.includes('code verifier') || raw.includes('pkce'))
     return 'Ce lien a été ouvert dans un autre navigateur que celui où il a été demandé. Refaites la demande de lien depuis cet appareil.'
-  if (raw.includes("n'est pas configuré")) return raw
+  if (raw.includes('pas encore reliée')) return err instanceof Error ? err.message : String(err)
   return 'La connexion a échoué. Réessayez, ou demandez un nouveau lien de connexion.'
 }
 

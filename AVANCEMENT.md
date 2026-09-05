@@ -48,21 +48,24 @@ Fiche « Mon Univers » complète, réseaux sociaux flexibles, Cercle des Talent
 
 ---
 
-## Vos actions (étape 0, à faire une fois)
+## Vos actions
 
-1. Dans Supabase → votre projet → **Project Settings → API** : repérez « Project URL » et la clé
-   publique « anon public » (ou « Publishable key »).
-2. Sur votre ordinateur, copiez `.env.example` en `.env.local` et remplacez les deux valeurs
-   (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`). Ne montrez jamais ce fichier.
-3. Dans le terminal, à la racine du projet : `npx supabase login` (ouvre le navigateur), puis
-   `npx supabase link --project-ref <référence>` (la référence est la partie avant `.supabase.co`
-   dans l'URL du projet ; le mot de passe de la base est demandé **dans le terminal**).
-4. `npm run db:push` pour créer les tables et les règles d'accès dans votre base.
-5. Dans Supabase → **Authentication → URL Configuration** : Site URL `http://localhost:5173`,
-   Redirect URLs `http://localhost:5173/**`.
-6. Dans Supabase → **Authentication → Emails → Templates → Magic Link** : collez le contenu de
-   `supabase/templates/magic_link.html`, objet « Votre lien de connexion au Cocon ».
-7. `npm run dev`, puis ouvrez http://localhost:5173.
+### A. Mettre le site en ligne (à faire maintenant)
+1. Sur vercel.com, connectez-vous avec votre compte GitHub.
+2. **Add New… → Project**, importez `lantosoahantson/libre-et-accomplie`, puis **Deploy**.
+3. **Settings → Git → Production Branch** : remplacez `main` par `claude/le-cocon-app-e07kqe`,
+   enregistrez, puis **Deployments → Redeploy**.
+4. Ouvrez l'adresse fournie par Vercel : les pages publiques doivent s'afficher.
+
+### B. Relier la base Supabase (ensuite)
+1. Supabase → **SQL Editor → New query** : collez le contenu de
+   `supabase/migrations/20260904000001_fondations.sql`, puis **Run**.
+2. Supabase → **Project Settings → API** : repérez « Project URL » et la clé publique « anon ».
+3. Vercel → **Settings → Environment Variables** : ajoutez `VITE_SUPABASE_URL` et
+   `VITE_SUPABASE_ANON_KEY`, puis **Redeploy**. Ne montrez jamais ces valeurs dans une conversation.
+4. Supabase → **Authentication → URL Configuration** : Site URL et Redirect URLs avec l'adresse Vercel.
+5. Supabase → **Authentication → Emails → Magic Link** : collez `supabase/templates/magic_link.html`.
+6. Supabase → **SQL Editor** : exécutez `scripts/designer-fondatrices.sql` avec vos trois adresses.
 
 ## Décisions en attente des trois fondatrices
 - Formulation finale de la vision et de la phrase d'intention (paramètre `intention_phrase`).

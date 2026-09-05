@@ -9,7 +9,7 @@ import {
   type ReactNode,
 } from 'react'
 import type { Session } from '@supabase/supabase-js'
-import { getSupabase, isSupabaseConfigured, siteUrl } from '../lib/supabase'
+import { NOT_CONFIGURED_MESSAGE, getSupabase, isSupabaseConfigured, siteUrl } from '../lib/supabase'
 import type { Profile } from '../lib/database.types'
 import { friendlyAuthError } from '../lib/auth-messages'
 
@@ -60,9 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!isSupabaseConfigured) {
-      setError(
-        "L'application n'est pas encore reliée à Supabase. Renseignez le fichier .env.local (voir .env.example) puis relancez « npm run dev ».",
-      )
+      setError(NOT_CONFIGURED_MESSAGE)
       setLoading(false)
       loadingRef.current = false
       return

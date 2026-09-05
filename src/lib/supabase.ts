@@ -14,6 +14,10 @@ export const siteUrl: string =
   (import.meta.env.VITE_SITE_URL as string | undefined) ||
   (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5173')
 
+/** Message affiché tant que la base n'est pas reliée. Volontairement non technique. */
+export const NOT_CONFIGURED_MESSAGE =
+  "L'application n'est pas encore reliée à sa base de données. Les pages publiques fonctionnent ; la connexion sera possible dès que la configuration sera terminée."
+
 let client: SupabaseClient | null = null
 
 /**
@@ -22,9 +26,7 @@ let client: SupabaseClient | null = null
  */
 export function getSupabase(): SupabaseClient {
   if (!isSupabaseConfigured) {
-    throw new Error(
-      "Supabase n'est pas configuré : renseignez VITE_SUPABASE_URL et VITE_SUPABASE_ANON_KEY dans .env.local.",
-    )
+    throw new Error(NOT_CONFIGURED_MESSAGE)
   }
   if (!client) {
     client = createClient(url!, anonKey!, {
