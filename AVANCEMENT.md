@@ -50,12 +50,18 @@ Fiche « Mon Univers » complète, réseaux sociaux flexibles, Cercle des Talent
 
 ## Vos actions
 
-### A. Mettre le site en ligne (à faire maintenant)
-1. Sur vercel.com, connectez-vous avec votre compte GitHub.
-2. **Add New… → Project**, importez `lantosoahantson/libre-et-accomplie`, puis **Deploy**.
-3. **Settings → Git → Production Branch** : remplacez `main` par `claude/le-cocon-app-e07kqe`,
-   enregistrez, puis **Deployments → Redeploy**.
-4. Ouvrez l'adresse fournie par Vercel : les pages publiques doivent s'afficher.
+### A. Mettre le site en ligne ✅ projet Vercel créé
+Projet Vercel : `libre-et-accomplie`, adresse de production `libre-et-accomplie.vercel.app`.
+
+La branche de production de Vercel est restée `main`, qui ne contient que le README : l'adresse courte
+affiche donc « 404: NOT_FOUND ». Deux façons d'afficher Le Cocon :
+
+- **Adresse de branche (immédiate, aucun réglage)** : chaque publication sur
+  `claude/le-cocon-app-e07kqe` déclenche une construction. Vercel → onglet **Deployments** →
+  le déploiement le plus récent → **Visit**. Cette adresse reste stable d'une publication à l'autre.
+- **Adresse courte** : Vercel → **Settings → Git → Production Branch**, remplacer `main` par
+  `claude/le-cocon-app-e07kqe`, puis **Save**. La publication suivante alimente
+  `libre-et-accomplie.vercel.app`.
 
 ### B. Relier la base Supabase (ensuite)
 1. Supabase → **SQL Editor → New query** : collez le contenu de
