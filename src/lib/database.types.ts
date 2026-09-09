@@ -18,6 +18,29 @@ export interface Profile {
   invited_by: string | null
   created_at: string
   updated_at: string
+  /* Fiche « Mon Univers » */
+  headline: string
+  activity: string
+  approach: string
+  skills: string[]
+  contribution_topics: string[]
+  audience: string
+  location: string
+  presence: 'presentiel' | 'distance' | 'les-deux'
+  current_project: string
+  website: string
+  /** Identifiant Instagram principal, sans arobase. Un seul compte. */
+  instagram: string
+}
+
+export interface SocialLinkRow {
+  id: string
+  profile_id: string
+  network: 'threads' | 'facebook' | 'linkedin' | 'tiktok' | 'youtube' | 'pinterest' | 'other'
+  label: string
+  url: string
+  position: number
+  created_at: string
 }
 
 export interface AppSetting {

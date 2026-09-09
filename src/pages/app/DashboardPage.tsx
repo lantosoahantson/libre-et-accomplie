@@ -1,9 +1,14 @@
 import { Link } from 'react-router-dom'
-import { Alert, ButtonLink, Card, PageHeader } from '../../components/ui'
-import { IconCalendar, IconExternal, IconFeed } from '../../components/icons'
+import { Alert, Badge, ButtonLink, Card, PageHeader, Spinner } from '../../components/ui'
+import { IconCalendar, IconExternal, IconFeed, IconPeople } from '../../components/icons'
+import { EventCard } from './AgendaPage'
 import { useAuth } from '../../hooks/useAuth'
+import { useEvents, usePosts, useResources } from '../../hooks/useContent'
+import { useMembers } from '../../hooks/useDirectory'
 import { useSettings } from '../../hooks/useSettings'
 import { accessOf } from '../../lib/roles'
+import { formatDay, isUpcoming, timeAgo } from '../../lib/dates'
+import { POST_CATEGORY_LABELS, POST_CATEGORY_TONE } from '../../lib/content'
 
 function greeting(): string {
   const h = new Date().getHours()
@@ -15,11 +20,22 @@ function greeting(): string {
 
 export default function DashboardPage() {
   const { profile } = useAuth()
+  const { nameOf } = useMembers()
+  const feed = usePosts()
+  const events = useEvents()
+  const resources = useResources()
   const { text } = useSettings()
+
   const whatsapp = text('whatsapp_link')
   const facebook = text('facebook_link')
   const intention = text('intention_phrase', 'Notre refuge de co-création au rythme du corps.')
   const access = accessOf(profile)
+
+  const upcoming = events.events.filter((e) => isUpcoming(e.starts_at))
+  const nextEvent = upcoming[0]
+  const latestPosts = feed.posts.slice(0, 3)
+  const latestResource = resources.resources[0]
+  const loading = feed.loading || events.loading || resources.loading
 
   return (
     <div className="space-y-6">
@@ -30,48 +46,133 @@ export default function DashboardPage() {
       />
 
       {!profile?.first_name && (
-        <Alert tone="info" title="Bienvenue dans le Cocon">
-          Prenez un instant pour <Link to="/app/profil">indiquer votre prénom</Link> : il
-          personnalisera votre accueil.
+        <Alert tone="info" title="Bienvenue dans Le Cocon">
+          Prenez un instant pour <Link to="/app/profil">compléter votre fiche</Link>. Rien n’est
+          obligatoire, et vous choisissez ce que vous montrez.
         </Alert>
       )}
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <div className="flex items-center gap-2 text-sage-500">
-            <IconCalendar className="h-5 w-5" />
-            <p className="text-sm font-semibold uppercase tracking-wider">Prochaine Parenthèse</p>
-          </div>
-          <h2 className="mt-2 text-2xl">À venir</h2>
-          <p className="mt-1 text-ink-soft">
-            La date, l’heure, le thème et le lien de connexion s’afficheront ici dès que le
-            calendrier sera en place (étape 3).
-          </p>
-          <ButtonLink to="/app/calendrier" variant="secondary" className="mt-4">
-            Voir le calendrier
-          </ButtonLink>
-        </Card>
-
-        <Card>
-          <div className="flex items-center gap-2 text-sage-500">
-            <IconFeed className="h-5 w-5" />
-            <p className="text-sm font-semibold uppercase tracking-wider">Fil du Cocon</p>
-          </div>
-          <h2 className="mt-2 text-2xl">Dernières publications</h2>
-          <p className="mt-1 text-ink-soft">
-            Le Fil arrive à l’étape 2 : partages, questions, petits pas et demandes de soutien.
-          </p>
-          <ButtonLink to="/app/fil" variant="secondary" className="mt-4">
-            Ouvrir le Fil
-          </ButtonLink>
-        </Card>
+      <div className="grid gap-3 sm:grid-cols-3">
+        <ButtonLink to="/app/fil" className="w-full">
+          <IconFeed className="h-5 w-5" /> Publier
+        </ButtonLink>
+        <ButtonLink to="/app/talents" variant="secondary" className="w-full">
+          <IconPeople className="h-5 w-5" /> Voir les talents
+        </ButtonLink>
+        <ButtonLink to="/app/agenda" variant="secondary" className="w-full">
+          <IconCalendar className="h-5 w-5" /> Voir l’agenda
+        </ButtonLink>
       </div>
+
+      {loading ? (
+        <div className="py-10 text-center">
+          <Spinner label="Chargement…" />
+        </div>
+      ) : (
+        <>
+          <section aria-labelledby="agenda">
+            <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
+              <h2 id="agenda" className="text-2xl">
+                Prochains rendez-vous
+              </h2>
+              <Link to="/app/agenda" className="text-sm font-semibold">
+                Voir tout l’agenda →
+              </Link>
+            </div>
+            {nextEvent ? (
+              <div className="space-y-3">
+                <EventCard event={nextEvent} api={events} />
+                {upcoming.length > 1 && (
+                  <ul className="divide-y divide-sand rounded-[--radius-card] border border-sand bg-cream-light px-5">
+                    {upcoming.slice(1, 3).map((e) => (
+                      <li
+                        key={e.id}
+                        className="flex flex-wrap items-center justify-between gap-2 py-3"
+                      >
+                        <span className="font-medium text-ink">{e.title}</span>
+                        <span className="text-sm text-ink-muted">{formatDay(e.starts_at)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            ) : (
+              <Card>
+                <p className="text-ink-soft">
+                  Aucun rendez-vous n’est encore programmé. Vous pouvez inaugurer l’agenda.
+                </p>
+                <ButtonLink to="/app/agenda" variant="secondary" className="mt-4">
+                  Ajouter un événement
+                </ButtonLink>
+              </Card>
+            )}
+          </section>
+
+          <section aria-labelledby="publications">
+            <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
+              <h2 id="publications" className="text-2xl">
+                Dernières publications
+              </h2>
+              <Link to="/app/fil" className="text-sm font-semibold">
+                Ouvrir le Fil →
+              </Link>
+            </div>
+            {latestPosts.length === 0 ? (
+              <Card>
+                <p className="text-ink-soft">
+                  Le Fil est encore silencieux. Vous pouvez y déposer le premier mot.
+                </p>
+                <ButtonLink to="/app/fil" variant="secondary" className="mt-4">
+                  Publier
+                </ButtonLink>
+              </Card>
+            ) : (
+              <ul className="grid gap-3 md:grid-cols-3">
+                {latestPosts.map((post) => (
+                  <Card as="li" key={post.id} className="flex h-full flex-col gap-2">
+                    <span
+                      className={`w-fit rounded-full px-3 py-0.5 text-sm font-semibold ${POST_CATEGORY_TONE[post.category]}`}
+                    >
+                      {POST_CATEGORY_LABELS[post.category]}
+                    </span>
+                    {post.title && <h3 className="text-lg">{post.title}</h3>}
+                    <p className="line-clamp-3 text-[0.95rem] text-ink-soft">{post.body}</p>
+                    <p className="mt-auto pt-2 text-sm text-ink-muted">
+                      {nameOf(post.author_id)} · {timeAgo(post.created_at)}
+                    </p>
+                  </Card>
+                ))}
+              </ul>
+            )}
+          </section>
+
+          {latestResource && (
+            <section aria-labelledby="ressource">
+              <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
+                <h2 id="ressource" className="text-2xl">
+                  Ressource récente
+                </h2>
+                <Link to="/app/outils" className="text-sm font-semibold">
+                  Ouvrir la Boîte à outils →
+                </Link>
+              </div>
+              <Card>
+                <Badge tone="sage">{latestResource.category}</Badge>
+                <h3 className="mt-2 text-lg">{latestResource.title}</h3>
+                {latestResource.description && (
+                  <p className="mt-1 text-ink-soft">{latestResource.description}</p>
+                )}
+              </Card>
+            </section>
+          )}
+        </>
+      )}
 
       {(whatsapp || facebook) && (
         <Card>
           <h2 className="text-xl">Canaux légers</h2>
           <p className="mt-1 text-sm text-ink-soft">
-            Pour les annonces importantes, les rappels et les liens rapides.
+            Pour les annonces importantes et les rappels pendant la phase de test.
           </p>
           <div className="mt-3 flex flex-wrap gap-3">
             {whatsapp && (
@@ -81,7 +182,7 @@ export default function DashboardPage() {
             )}
             {facebook && (
               <ButtonLink to={facebook} external variant="ghost">
-                Facebook (transition) <IconExternal className="h-4 w-4" />
+                Facebook <IconExternal className="h-4 w-4" />
               </ButtonLink>
             )}
           </div>
@@ -90,8 +191,8 @@ export default function DashboardPage() {
 
       {access === 'accompanied' && (
         <Alert tone="info">
-          Vous accédez aux contenus éducatifs, ressources, ateliers et fiches ouverts à votre
-          cercle. Aucun démarchage n’est toléré dans le Cocon.
+          Vous accédez aux contenus ouverts à votre cercle. Aucun démarchage n’est toléré dans Le
+          Cocon.
         </Alert>
       )}
     </div>

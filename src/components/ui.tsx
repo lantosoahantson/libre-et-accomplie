@@ -1,4 +1,10 @@
-import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode } from 'react'
+import type {
+  ButtonHTMLAttributes,
+  InputHTMLAttributes,
+  ReactNode,
+  SelectHTMLAttributes,
+  TextareaHTMLAttributes,
+} from 'react'
 import { Link } from 'react-router-dom'
 
 /* ----------------------------------------------------------------------------
@@ -294,5 +300,194 @@ export function Badge({
     <span className={`inline-block rounded-full px-3 py-0.5 text-sm font-semibold ${cls}`}>
       {children}
     </span>
+  )
+}
+
+export function Textarea({
+  className = '',
+  error,
+  ...props
+}: TextareaHTMLAttributes<HTMLTextAreaElement> & { error?: boolean }) {
+  return (
+    <textarea
+      className={`input min-h-28 resize-y leading-relaxed ${className}`}
+      aria-invalid={error || undefined}
+      aria-describedby={props.id ? (error ? `${props.id}-error` : `${props.id}-hint`) : undefined}
+      {...props}
+    />
+  )
+}
+
+export function Select({
+  className = '',
+  error,
+  children,
+  ...props
+}: SelectHTMLAttributes<HTMLSelectElement> & { error?: boolean }) {
+  return (
+    <select
+      className={`input cursor-pointer pr-10 ${className}`}
+      aria-invalid={error || undefined}
+      {...props}
+    >
+      {children}
+    </select>
+  )
+}
+
+/** Pastille d'initiales : le prototype n'impose aucune photo. */
+export function Avatar({
+  firstName,
+  lastName,
+  size = 'md',
+}: {
+  firstName: string
+  lastName?: string
+  size?: 'sm' | 'md' | 'lg'
+}) {
+  const initials = `${firstName.trim()[0] ?? '?'}${(lastName ?? '').trim()[0] ?? ''}`.toUpperCase()
+  const cls =
+    size === 'sm' ? 'h-9 w-9 text-sm' : size === 'lg' ? 'h-20 w-20 text-2xl' : 'h-12 w-12 text-base'
+  return (
+    <span
+      aria-hidden="true"
+      className={`${cls} inline-flex shrink-0 items-center justify-center rounded-full bg-sage-200 font-serif font-medium text-forest-700`}
+    >
+      {initials}
+    </span>
+  )
+}
+
+/** Filtres en pastilles, utilisables au clavier et confortables au doigt. */
+export function FilterChips<T extends string>({
+  options,
+  value,
+  onChange,
+  label,
+}: {
+  options: { value: T; label: string; count?: number }[]
+  value: T
+  onChange: (value: T) => void
+  label: string
+}) {
+  return (
+    <div role="group" aria-label={label} className="-mx-1 flex flex-wrap gap-2 px-1">
+      {options.map((o) => {
+        const active = o.value === value
+        return (
+          <button
+            key={o.value}
+            type="button"
+            onClick={() => onChange(o.value)}
+            aria-pressed={active}
+            className={`min-h-10 rounded-full border px-4 text-[0.95rem] font-medium transition-colors ${
+              active
+                ? 'border-forest-500 bg-forest-500 text-cream-light'
+                : 'border-sand-dark bg-cream-light text-ink-soft hover:border-sage-300 hover:text-forest-700'
+            }`}
+          >
+            {o.label}
+            {typeof o.count === 'number' && (
+              <span className={active ? 'ml-1.5 opacity-80' : 'ml-1.5 text-ink-muted'}>
+                {o.count}
+              </span>
+            )}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+/** Champ de recherche simple, avec effacement. */
+export function SearchField({
+  id,
+  value,
+  onChange,
+  placeholder,
+  label,
+}: {
+  id: string
+  value: string
+  onChange: (value: string) => void
+  placeholder: string
+  label: string
+}) {
+  return (
+    <div className="relative">
+      <label htmlFor={id} className="sr-only">
+        {label}
+      </label>
+      <input
+        id={id}
+        type="search"
+        className="input pl-11"
+        value={value}
+        placeholder={placeholder}
+        onChange={(e) => onChange(e.target.value)}
+      />
+      <svg
+        className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-ink-muted"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        aria-hidden="true"
+      >
+        <circle cx="11" cy="11" r="6.5" />
+        <path d="m16 16 4.5 4.5" strokeLinecap="round" />
+      </svg>
+    </div>
+  )
+}
+
+/** Liste de mots-clés, compétences ou sujets. */
+export function TagList({
+  items,
+  tone = 'sage',
+}: {
+  items: string[]
+  tone?: 'sage' | 'ochre' | 'neutral'
+}) {
+  if (items.length === 0) return null
+  const cls = {
+    sage: 'bg-sage-100 text-forest-700',
+    ochre: 'bg-ochre-100 text-ochre-500',
+    neutral: 'bg-sand text-ink-soft',
+  }[tone]
+  return (
+    <ul className="flex flex-wrap gap-1.5">
+      {items.map((item) => (
+        <li key={item} className={`rounded-full px-3 py-0.5 text-sm ${cls}`}>
+          {item}
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+/** Lien externe, cliquable et reconnaissable, qui s'ouvre dans un nouvel onglet. */
+export function ExternalLink({ href, children }: { href: string; children: ReactNode }) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex min-h-9 items-center gap-1.5 break-all text-forest-600 underline decoration-sage-300 underline-offset-4 hover:text-forest-700 hover:decoration-forest-500"
+    >
+      {children}
+      <svg
+        viewBox="0 0 24 24"
+        className="h-3.5 w-3.5 shrink-0"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        aria-hidden="true"
+      >
+        <path d="M14 4h6v6M20 4l-8 8" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" strokeLinecap="round" />
+      </svg>
+      <span className="sr-only">(nouvel onglet)</span>
+    </a>
   )
 }

@@ -33,12 +33,6 @@ et sert `dist/`. Toutes les adresses internes sont renvoyées vers `index.html`,
 Sans ces variables, les pages publiques s'affichent normalement et la connexion indique clairement
 que la base n'est pas encore reliée.
 
-## Créer les tables sans terminal
-
-Dans le tableau de bord Supabase → **SQL Editor → New query**, collez le contenu de
-`supabase/migrations/20260904000001_fondations.sql` puis cliquez sur **Run**. Aucune installation
-n'est nécessaire. La CLI reste utilisable pour qui préfère le terminal.
-
 ## Démarrer sur votre ordinateur
 
 Prérequis : Node.js (LTS) et Git.
@@ -73,14 +67,64 @@ apparaître dans ce projet ni dans une conversation.
 | `npx supabase@latest link --project-ref <ref>` | Relie le dossier à votre projet Supabase, mot de passe demandé dans le terminal |
 | `npm run db:push` | Applique les migrations à votre base Supabase |
 
-## Désigner les trois fondatrices
+## Mettre le prototype en service
 
-Les fondatrices sont désignées **côté serveur uniquement**, par identifiant de compte : leur adresse
-électronique n'apparaît jamais dans l'application.
+Dans cet ordre. Chaque étape est manuelle et se fait dans votre navigateur.
 
-1. Chaque fondatrice se connecte une première fois à l'application (lien magique).
-2. Dans le tableau de bord Supabase → **SQL Editor**, exécutez le contenu de
-   `scripts/designer-fondatrices.sql` en remplaçant les adresses.
+### 1. Créer les tables dans Supabase
+
+Tableau de bord Supabase → **SQL Editor → New query**. Exécutez d'abord
+`scripts/verifier-avant-migration.sql` pour voir ce que contient déjà la base : les
+migrations n'ajoutent que des tables et des colonnes, elles n'en suppriment aucune.
+
+Puis collez et exécutez, dans l'ordre, le contenu de chaque fichier de
+`supabase/migrations/` :
+
+1. `20260904000001_fondations.sql` — rôles, statuts, profils, fondatrices, paramètres
+2. `20260909000001_profil_et_reseaux.sql` — fiche « Mon Univers » et réseaux sociaux
+3. `20260909000002_contenus_communaute.sql` — publications, projets, ressources, agenda
+
+La Supabase CLI fait la même chose en une commande (`npm run db:push`) pour qui
+préfère le terminal.
+
+### 2. Renseigner les variables d'environnement
+
+| Variable | Où la trouver | Où la mettre |
+| --- | --- | --- |
+| `VITE_SUPABASE_URL` | Supabase → Project Settings → API → « Project URL » | Vercel → Settings → Environment Variables, et `.env.local` en local |
+| `VITE_SUPABASE_ANON_KEY` | Supabase → Project Settings → API → clé « anon public » ou « Publishable key » | idem |
+| `VITE_SITE_URL` | facultatif | inutile sur Vercel : l'application utilise l'adresse du site |
+
+Seule la clé **publique** est utilisée. La clé `service_role` ne doit jamais figurer
+dans ce dépôt, dans Vercel, ni dans une conversation. Après tout ajout de variable
+dans Vercel, relancez un déploiement pour qu'elle soit prise en compte.
+
+### 3. Déclarer les adresses de redirection dans Supabase
+
+Supabase → **Authentication → URL Configuration** :
+
+- **Site URL** : l'adresse de production, par exemple `https://libre-et-accomplie.vercel.app`
+- **Redirect URLs** : ajoutez ces trois lignes
+
+```
+https://libre-et-accomplie.vercel.app/**
+http://localhost:5173/**
+http://127.0.0.1:5173/**
+```
+
+Sans cela, le lien magique reçu par courriel renvoie vers une page d'erreur.
+
+### 4. Modèle de courriel en français
+
+Supabase → **Authentication → Emails → Templates → Magic Link**. Objet :
+« Votre lien de connexion au Cocon ». Contenu : celui de
+`supabase/templates/magic_link.html`.
+
+### 5. Désigner les trois fondatrices
+
+Chaque fondatrice se connecte une première fois avec son adresse. Puis, dans le
+**SQL Editor**, exécutez `scripts/designer-fondatrices.sql` après y avoir mis les
+trois adresses. Chacune complète ensuite sa fiche depuis « Mon Univers ».
 
 ## Sécurité et confidentialité
 

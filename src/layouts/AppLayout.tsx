@@ -14,7 +14,14 @@ import {
   IconUser,
 } from '../components/icons'
 import { useAuth } from '../hooks/useAuth'
-import { ROLE_LABELS, STATUS_LABELS, accessOf, displayName, isFounder } from '../lib/roles'
+import {
+  ROLE_LABELS,
+  STATUS_LABELS,
+  accessOf,
+  displayName,
+  isFounder,
+  isProfessionalCircle,
+} from '../lib/roles'
 
 /** Les cinq entrées principales (barre inférieure sur mobile, latérale sur ordinateur). */
 const mainNav = [
@@ -26,7 +33,7 @@ const mainNav = [
 ]
 
 const secondaryNav = [
-  { to: '/app/calendrier', label: 'Calendrier', icon: IconCalendar },
+  { to: '/app/agenda', label: 'Agenda', icon: IconCalendar },
   { to: '/app/profil', label: 'Mon Univers', icon: IconUser },
   { to: '/app/parametres', label: 'Paramètres', icon: IconSettings },
 ]
@@ -45,6 +52,12 @@ export default function AppLayout() {
   const founder = isFounder(profile)
   const access = accessOf(profile)
   const name = displayName(profile)
+  // Le Fil et les Projets restent réservés au cercle professionnel : on masque
+  // les entrées inaccessibles plutôt que de laisser des liens sans issue.
+  const professional = isProfessionalCircle(profile)
+  const nav = professional
+    ? mainNav
+    : mainNav.filter((n) => !['/app/fil', '/app/projets'].includes(n.to))
 
   const handleSignOut = async () => {
     setSigningOut(true)
@@ -59,15 +72,12 @@ export default function AppLayout() {
   return (
     <div className="flex min-h-dvh">
       {/* Navigation latérale (ordinateur) */}
-      <aside
-        className="hidden w-64 shrink-0 flex-col border-r border-sand/70 bg-cream-light px-4 py-5 md:flex"
-        aria-label="Navigation principale"
-      >
+      <aside className="hidden w-64 shrink-0 flex-col border-r border-sand/70 bg-cream-light px-4 py-5 md:flex">
         <Link to="/app" className="mb-6 block px-2 no-underline">
           <Logo />
         </Link>
-        <nav className="flex flex-col gap-1">
-          {mainNav.map(({ to, label, icon: Icon, end }) => (
+        <nav className="flex flex-col gap-1" aria-label="Navigation principale">
+          {nav.map(({ to, label, icon: Icon, end }) => (
             <NavLink key={to} to={to} end={end} className={({ isActive }) => navClass(isActive)}>
               <Icon className="h-5 w-5 shrink-0" /> {label}
             </NavLink>
@@ -123,9 +133,9 @@ export default function AppLayout() {
               </Link>
             )}
             <Link
-              to="/app/calendrier"
+              to="/app/agenda"
               className="rounded-lg p-2 text-forest-700 hover:bg-sage-50"
-              aria-label="Calendrier"
+              aria-label="Agenda"
             >
               <IconCalendar />
             </Link>
@@ -161,8 +171,11 @@ export default function AppLayout() {
           className="safe-bottom fixed inset-x-0 bottom-0 z-20 border-t border-sand bg-cream-light md:hidden"
           aria-label="Navigation principale mobile"
         >
-          <ul className="grid grid-cols-5">
-            {mainNav.map(({ to, label, short, icon: Icon, end }) => (
+          <ul
+            className="grid"
+            style={{ gridTemplateColumns: `repeat(${nav.length}, minmax(0, 1fr))` }}
+          >
+            {nav.map(({ to, label, short, icon: Icon, end }) => (
               <li key={to}>
                 <NavLink
                   to={to}

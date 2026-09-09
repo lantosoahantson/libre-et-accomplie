@@ -17,7 +17,11 @@ import RestrictedPage from './pages/app/RestrictedPage'
 import ProfilePage from './pages/app/ProfilePage'
 import SettingsPage from './pages/app/SettingsPage'
 import GovernancePage from './pages/app/GovernancePage'
-import ComingSoonPage from './pages/app/ComingSoonPage'
+import FeedPage from './pages/app/FeedPage'
+import ProjectsPage from './pages/app/ProjectsPage'
+import TalentsPage, { MemberPage } from './pages/app/TalentsPage'
+import ToolboxPage from './pages/app/ToolboxPage'
+import AgendaPage from './pages/app/AgendaPage'
 import NotFoundPage from './pages/NotFoundPage'
 import ProfileShell from './layouts/ProfileShell'
 
@@ -68,71 +72,21 @@ export const router = createBrowserRouter([
             element: <AppLayout />,
             children: [
               { path: '/app', element: <DashboardPage /> },
-              {
-                path: '/app/calendrier',
-                element: (
-                  <ComingSoonPage
-                    eyebrow="Calendrier"
-                    title="Calendrier partagé"
-                    intro="Visios de La Parenthèse, ateliers, rencontres et lives, en heure de Paris."
-                    step={3}
-                    icon="🗓"
-                  />
-                ),
-              },
-              {
-                path: '/app/outils',
-                element: (
-                  <ComingSoonPage
-                    eyebrow="Boîte à Outils"
-                    title="La Boîte à Outils du Cocon"
-                    intro="Documents, liens utiles, supports d’ateliers, replays et synthèses."
-                    step={3}
-                    icon="🧰"
-                  />
-                ),
-              },
+              // Ouverts à tous les membres du Cocon, y compris le cercle des
+              // personnes accompagnées : ce que chacun voit reste filtré par les
+              // règles d'accès de la base.
+              { path: '/app/agenda', element: <AgendaPage /> },
+              { path: '/app/calendrier', element: <Navigate to="/app/agenda" replace /> },
+              { path: '/app/outils', element: <ToolboxPage /> },
+              { path: '/app/talents', element: <TalentsPage /> },
+              { path: '/app/talents/:memberId', element: <MemberPage /> },
               { path: '/app/parametres', element: <SettingsPage /> },
               {
-                // Contenus réservés au cercle professionnel.
+                // Réservé au cercle professionnel.
                 element: <RequireZone zone="professional" />,
                 children: [
-                  {
-                    path: '/app/fil',
-                    element: (
-                      <ComingSoonPage
-                        eyebrow="Fil du Cocon"
-                        title="Le Fil du Cocon"
-                        intro="Partages, questions, petits pas, demandes de soutien, projets à tester."
-                        step={2}
-                        icon="🌿"
-                      />
-                    ),
-                  },
-                  {
-                    path: '/app/projets',
-                    element: (
-                      <ComingSoonPage
-                        eyebrow="Projets & Synergies"
-                        title="Le Labo des Projets et les Synergies"
-                        intro="Présenter un projet avant son lancement, chercher des complémentarités."
-                        step={3}
-                        icon="🌱"
-                      />
-                    ),
-                  },
-                  {
-                    path: '/app/talents',
-                    element: (
-                      <ComingSoonPage
-                        eyebrow="Cercle des Talents"
-                        title="Le Cercle des Talents"
-                        intro="L’annuaire privé des membres et leurs univers."
-                        step={2}
-                        icon="🤝"
-                      />
-                    ),
-                  },
+                  { path: '/app/fil', element: <FeedPage /> },
+                  { path: '/app/projets', element: <ProjectsPage /> },
                 ],
               },
               {

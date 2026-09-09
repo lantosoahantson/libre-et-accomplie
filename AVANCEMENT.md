@@ -39,39 +39,41 @@ Suivi lisible de la construction, mis à jour à la fin de chaque étape.
 **Non encore vérifié (nécessite votre projet Supabase)**
 - Réception réelle du courriel de lien magique et connexion de bout en bout.
 
-## Étape 2 — Cercle professionnel ⏳ à venir
-Fiche « Mon Univers » complète, réseaux sociaux flexibles, Cercle des Talents, Fil du Cocon.
+## Prototype pilote ✅ construit et vérifié
 
-## Étape 3 — Vie de la communauté ⏳ à venir
-## Étape 4 — Gouvernance ⏳ à venir
-## Étape 5 — Fiabilisation et mise en production ⏳ à venir
+Objectif : un espace presque vierge mais réellement fonctionnel, dans lequel les trois
+fondatrices se connectent et publient de vrais contenus.
 
----
+**Retiré**
+- Tous les contenus fictifs : six profils, huit publications, cinq projets, huit ressources,
+  quatre événements.
+- Le mode démonstration : bandeau, sélecteur de rôle, stockage dans le navigateur, entrée
+  depuis la page de connexion. Les fichiers `demo-data.ts`, `useDemo.tsx` et `DemoNotice.tsx`
+  n'existent plus.
 
-## Vos actions
+**Ajouté**
+- Six tables partagées dans Supabase : `posts`, `post_comments`, `post_supports`, `projects`,
+  `resources`, `events`, `event_attendees`, avec leurs règles d'accès. Chacun gère ses propres
+  contenus, les fondatrices administrent l'ensemble, personne d'autre ne voit rien.
+- Les cinq espaces créent, modifient et suppriment réellement : publications avec catégories,
+  commentaires et soutien ; projets avec type de demande et clôture ; ressources par lien externe ;
+  événements avec date, heure de Paris, animatrice, lien, et participation.
+- Des états vides accueillants, chacun avec un bouton pour inaugurer l'espace.
+- `scripts/verifier-avant-migration.sql` pour contrôler la base avant toute migration.
 
-### A. Mettre le site en ligne ✅ projet Vercel créé
-Projet Vercel : `libre-et-accomplie`, adresse de production `libre-et-accomplie.vercel.app`.
+**Vérifié**
+- 55 tests automatisés, 106 vérifications de règles d'accès en base, 53 contrôles de bout en bout
+  dans un navigateur contre une vraie base PostgreSQL avec PostgREST et de vraies règles d'accès.
 
-La branche de production de Vercel est restée `main`, qui ne contient que le README : l'adresse courte
-affiche donc « 404: NOT_FOUND ». Deux façons d'afficher Le Cocon :
+## Ce qui reste à faire côté Supabase et Vercel
+Voir la section « Mettre le prototype en service » du README : appliquer les trois migrations,
+renseigner les deux variables d'environnement, déclarer les adresses de redirection, coller le
+modèle de courriel, puis désigner les trois fondatrices.
 
-- **Adresse de branche (immédiate, aucun réglage)** : chaque publication sur
-  `claude/le-cocon-app-e07kqe` déclenche une construction. Vercel → onglet **Deployments** →
-  le déploiement le plus récent → **Visit**. Cette adresse reste stable d'une publication à l'autre.
-- **Adresse courte** : Vercel → **Settings → Git → Production Branch**, remplacer `main` par
-  `claude/le-cocon-app-e07kqe`, puis **Save**. La publication suivante alimente
-  `libre-et-accomplie.vercel.app`.
-
-### B. Relier la base Supabase (ensuite)
-1. Supabase → **SQL Editor → New query** : collez le contenu de
-   `supabase/migrations/20260904000001_fondations.sql`, puis **Run**.
-2. Supabase → **Project Settings → API** : repérez « Project URL » et la clé publique « anon ».
-3. Vercel → **Settings → Environment Variables** : ajoutez `VITE_SUPABASE_URL` et
-   `VITE_SUPABASE_ANON_KEY`, puis **Redeploy**. Ne montrez jamais ces valeurs dans une conversation.
-4. Supabase → **Authentication → URL Configuration** : Site URL et Redirect URLs avec l'adresse Vercel.
-5. Supabase → **Authentication → Emails → Magic Link** : collez `supabase/templates/magic_link.html`.
-6. Supabase → **SQL Editor** : exécutez `scripts/designer-fondatrices.sql` avec vos trois adresses.
+## Ce qui n'est pas construit, volontairement
+Cercle des personnes accompagnées, candidatures publiques, votes des fondatrices, charte
+versionnée, notifications, messagerie privée, signalements, paiements, annuaire public,
+téléversement de vidéos. L'architecture les laisse possibles plus tard.
 
 ## Décisions en attente des trois fondatrices
 - Formulation finale de la vision et de la phrase d'intention (paramètre `intention_phrase`).
@@ -85,8 +87,8 @@ affiche donc « 404: NOT_FOUND ». Deux façons d'afficher Le Cocon :
   commissions : non construites, à trancher ensemble.
 
 ## Choix techniques signalés
-- Une personne en pause reste membre (accès conservé), sa fiche est masquée automatiquement.
-- Une personne accompagnée voit les fiches professionnelles ouvertes à son cercle et les autres
-  personnes accompagnées actives (nécessaire pour les futures publications de son cercle).
-- Les fondatrices sont désignées par SQL côté serveur (`scripts/designer-fondatrices.sql`) :
-  l'application ne peut pas accorder ce rôle.
+- Une personne en pause reste membre ; sa fiche est masquée automatiquement.
+- Le Fil et Projets & Synergies restent réservés au cercle professionnel ; le Cercle des Talents,
+  la Boîte à outils et l'Agenda sont ouverts à tous les membres.
+- Les fondatrices sont désignées par SQL côté serveur : l'application ne peut pas accorder ce rôle.
+- Les ressources et les replays sont référencés par un lien externe, sans hébergement de fichier.

@@ -18,6 +18,17 @@ const profile = (role: MemberRole, status: MemberStatus): Profile => ({
   invited_by: null,
   created_at: '',
   updated_at: '',
+  headline: '',
+  activity: '',
+  approach: '',
+  skills: [],
+  contribution_topics: [],
+  audience: '',
+  location: '',
+  presence: 'les-deux',
+  current_project: '',
+  website: '',
+  instagram: '',
 })
 
 const noop = async () => {
