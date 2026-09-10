@@ -14,7 +14,9 @@ update public.profiles set role = 'professional', status = 'active', first_name 
   where id = :'pro_a';
 update public.profiles set role = 'professional', status = 'active', first_name = 'Naïma' where id = :'pro_b';
 update public.profiles set role = 'professional', status = 'active', is_hidden = true where id = :'pro_hidden';
-update public.profiles set status = 'active' where id = :'acc';
+-- Le rôle du second cercle ne peut plus venir du navigateur : on l'attribue ici
+-- côté serveur, comme le ferait une fondatrice.
+update public.profiles set role = 'accompanied', status = 'active' where id = :'acc';
 
 insert into public.social_links (profile_id, network, url, label) values
   (:'pro_a', 'threads',  'https://threads.net/@alix.demo', ''),
@@ -129,12 +131,21 @@ select tests.ok((select count(*) from public.social_links where profile_id = :'p
 -- ---------------------------------------------------------------------------
 -- Cercles : personne accompagnée et candidat
 -- ---------------------------------------------------------------------------
+-- Cercle fermé : elle ne voit aucun réseau, même sur une fiche ouverte à son cercle.
+select tests.login(:'acc');
+select tests.ok((select count(*) from public.social_links) = 0,
+  'cercle fermé : une personne accompagnée ne voit aucun réseau social');
+select tests.logout();
+
+-- Cercle ouvert par les fondatrices : les règles du cercle s'appliquent de nouveau.
+update public.app_settings set value = 'true' where key = 'accompanied_circle_enabled';
 select tests.login(:'acc');
 select tests.ok((select count(*) from public.social_links where profile_id = :'pro_a') = 2,
-  'une personne accompagnée voit les réseaux d''une fiche ouverte à son cercle');
+  'cercle ouvert : elle voit les réseaux d''une fiche ouverte à son cercle');
 select tests.ok((select count(*) from public.social_links where profile_id = :'pro_b') = 0,
   'scénario 8 : elle ne voit pas les réseaux d''une fiche fermée à son cercle');
 select tests.logout();
+update public.app_settings set value = 'false' where key = 'accompanied_circle_enabled';
 
 select tests.login(:'cand');
 select tests.ok((select count(*) from public.social_links) = 0,

@@ -17,7 +17,8 @@ select tests.new_user('demo-accompagnee@exemple.test', '{"invited_as":"accompani
 -- Le trigger a créé les profils avec le bon rôle de départ
 select tests.ok((select count(*) from public.profiles) = 10, 'un profil est créé automatiquement pour chaque compte');
 select tests.ok((select role = 'candidate' and status = 'pending' from public.profiles where id = :'cand'), 'un nouveau compte démarre comme candidat en attente');
-select tests.ok((select role = 'accompanied' and status = 'invited' from public.profiles where id = :'acc'), 'un compte invité démarre comme personne accompagnée invitée');
+select tests.ok((select role = 'candidate' and status = 'pending' from public.profiles where id = :'acc'),
+  'une inscription réclamant « invited_as = accompanied » n''obtient aucun privilège');
 
 -- Désignation des fondatrices (côté serveur uniquement)
 select public.designate_founder(:'f1');
@@ -41,7 +42,8 @@ update public.profiles set role = 'professional', status = 'active', is_hidden =
 update public.profiles set role = 'professional', status = 'paused', visible_to_accompanied = true where id = :'pro_paused';
 update public.profiles set status = 'refused' where id = :'refused';
 update public.profiles set role = 'professional', status = 'suspended' where id = :'suspended';
-update public.profiles set status = 'active' where id = :'acc';
+-- Ce rôle ne peut plus venir du navigateur : seule une fondatrice ou le serveur l'attribue.
+update public.profiles set role = 'accompanied', status = 'active' where id = :'acc';
 update public.profiles set visible_to_accompanied = true where id = :'pro';
 
 -- ---------------------------------------------------------------------------
@@ -150,8 +152,21 @@ select tests.ok((select value = '""'::jsonb from public.app_settings where key =
 -- ---------------------------------------------------------------------------
 -- 8. Une personne accompagnée ne voit aucun contenu réservé aux professionnels
 -- ---------------------------------------------------------------------------
+
+-- 8a. Cercle fermé, valeur par défaut : elle n'est reconnue nulle part.
 select tests.login(:'acc');
-select tests.ok(public.is_active_accompanied(), 'la personne accompagnée est reconnue comme telle');
+select tests.ok(public.accompanied_circle_enabled() = false, 'le second cercle est fermé par défaut');
+select tests.ok(public.is_active_accompanied() = false, 'cercle fermé : elle n''est pas un membre reconnu');
+select tests.ok(public.is_active_member() = false, 'cercle fermé : elle n''est pas membre active du Cocon');
+select tests.ok((select count(*) from public.profiles) = 1, 'cercle fermé : elle ne voit que son propre profil');
+select tests.ok((select count(*) from public.founders) = 0, 'cercle fermé : elle ne voit pas les fondatrices');
+select tests.ok((select count(*) from public.app_settings where audience = 'members') = 0, 'cercle fermé : elle ne voit aucun paramètre des membres');
+select tests.logout();
+
+-- 8b. Cercle ouvert par les fondatrices : les règles du cercle s'appliquent.
+update public.app_settings set value = 'true' where key = 'accompanied_circle_enabled';
+select tests.login(:'acc');
+select tests.ok(public.is_active_accompanied(), 'cercle ouvert : la personne accompagnée est reconnue comme telle');
 select tests.ok(public.is_active_professional() = false, 'scénario 8 : elle n''est pas professionnelle');
 select tests.ok((select count(*) from public.profiles where id = :'pro') = 1, 'elle voit une fiche pro ouverte à son cercle');
 select tests.ok((select count(*) from public.profiles where id = :'pro_paused') = 1, 'elle voit une fiche pro en pause ouverte à son cercle');
@@ -160,6 +175,7 @@ select tests.ok((select count(*) from public.profiles where id = :'pro_hidden') 
 select tests.ok((select count(*) from public.profiles where id = :'cand') = 0, 'scénario 8 : elle ne voit pas les candidats');
 select tests.ok((select count(*) from public.app_settings where audience = 'professionals') = 0, 'scénario 8 : elle ne voit aucun paramètre réservé aux professionnels');
 select tests.logout();
+update public.app_settings set value = 'false' where key = 'accompanied_circle_enabled';
 
 -- ---------------------------------------------------------------------------
 -- Fondatrices : gouvernance
